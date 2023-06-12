@@ -83,8 +83,8 @@ def get_selected_dates():
     team_id = "3314662"
     url = "https://api.clickup.com/api/v2/team/" + team_id + "/time_entries"
     query = {
-      "start_date": str(int(start_timestamp*1000)),#int(start_date*1000), # Converting to milliseconds from seconds
-      "end_date": str(int((end_timestamp+86399)*1000)),#int(end_date*1000),
+      "start_date": str(int(start_timestamp*1000) - 19800000), # Converting to milliseconds from seconds
+      "end_date": str(int((end_timestamp+86399)*1000) - 19800000),
       "assignee": employee_key,
     }
     
@@ -209,7 +209,7 @@ def get_selected_dates():
     # Append a value to the 6th column
     df_h.iloc[-1, 5] = weekly_total
     df_h.iloc[-1, 3] = 'Week\'s total ='
-    week_number = start_date.isocalendar()[1]
+    week_number = end_date.isocalendar()[1]
     df_h.at[df_h.index[-1], 'Task Name'] = f'Week #{week_number} - {start_date_str}, {year_str} - {end_date_str}, {year_str}'
     
     # df_h = df_h.append(weekly_total, ignore_index=True)
@@ -329,4 +329,3 @@ footer_label = tk.Label(root, text="Version 1.0 (29th May 2023)", relief=tk.RAIS
 footer_label.pack(side=tk.BOTTOM, fill=tk.X)
 
 root.mainloop()
-
