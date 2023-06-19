@@ -6,21 +6,25 @@ Created on Fri May 26 18:52:02 2023
 """
 
 import tkinter as tk
-from tkinter import ttk
+# from tkinter import ttk
 from tkcalendar import Calendar
 import pandas as pd
-from datetime import datetime, timezone, date
+from datetime import datetime, timezone
 import requests
 import time
 import webbrowser
-import urllib.parse
-from tkinter import font
+# import urllib.parse
+# from tkinter import font
+import pytz
 
 # Dictionary mapping month names to numbers
 month_dict = {
     "Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6, "Jul": 7,
     "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12
 }
+
+# Create a timezone object for IST
+ist_timezone = pytz.timezone('Asia/Kolkata')
 
 # Exchange keys and values
 month_flipped = {value: key for key, value in month_dict.items()}
@@ -83,8 +87,8 @@ def get_selected_dates():
     team_id = "3314662"
     url = "https://api.clickup.com/api/v2/team/" + team_id + "/time_entries"
     query = {
-      "start_date": str(int(start_timestamp*1000) - 19800000), # Converting to milliseconds from seconds
-      "end_date": str(int((end_timestamp+86399)*1000) - 19800000),
+      "start_date": str(int(start_timestamp - 19800)*1000),#int(start_date*1000), # Converting to milliseconds from seconds
+      "end_date": str(int((end_timestamp+86399)*1000) - 19800000),#int(end_date*1000),
       "assignee": employee_key,
     }
     
@@ -120,8 +124,11 @@ def get_selected_dates():
         
         date = pd.Timestamp(start_time, unit='s').date()
         dates.append(date)
-        
-        day = datetime.utcfromtimestamp(start_time).strftime('%A')
+
+        # Convert start_time to a datetime object in UTC, Localize the datetime object to UTC                
+        localized_start_datetime = pytz.utc.localize(datetime.utcfromtimestamp(start_time))
+        # Convert the datetime object from UTC to IST
+        day = localized_start_datetime.astimezone(ist_timezone).strftime('%A')
         days.append(day)
         
     # Create a pandas dataframe
