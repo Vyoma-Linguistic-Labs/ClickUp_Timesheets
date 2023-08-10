@@ -63,18 +63,31 @@ data = response.json()
 # Extract 'id' and 'name' into a separate dictionary
 spaces = {item['id']: item['name'] for item in data['spaces']}
 
-# Load the JSON file
-with open('teamInfo.json', 'r') as f:
-    data = json.load(f)
+# # Load the JSON file
+# with open('teamInfo.json', 'r') as f:
+#     data = json.load(f)
+
+# Extract Team members info
+url = "https://api.clickup.com/api/v2/team"
+headers = {
+  "Content-Type": "application/json",
+  "Authorization": "pk_3326657_EOM3G6Z3CKH2W61H8NOL5T7AGO9D7LNN"
+}
+response = requests.get(url, headers=headers)
+data = response.json()
+team = data['teams'][0]
+
+# Write the dictionary to the JSON file
+with open('teamInfo.json', "w") as json_file:
+    json.dump(data, json_file)
     
 # Extract member id and username
 members_dict = {}
-for team in data['teams']:
-    for member in team['members']:
-        member_id = member['user']['id']
-        member_username = member['user']['username']
-        members_dict[member_id] = member_username
-
+# for team in data['teams']:
+for member in team['members']:
+    member_id = member['user']['id']
+    member_username = member['user']['username']
+    members_dict[member_id] = member_username
 
 count = 0
 num_of_err = 0
@@ -93,7 +106,6 @@ space_ids = []
 folder_ids = []
 list_ids = []
 total_time_spent_till_date = []
-
 descriptions = []
 billable = []
 tags = []
@@ -253,6 +265,4 @@ for task_id in tqdm(uniqueTaskList, total=len(uniqueTaskList)):
 df['Space Name'] = df['Space ID'].map(spaces)
 
 df.to_csv('allEmployeeClickUp.csv', index=False)   
-print(time.time()-start)        
-        
-         
+print(time.time()-start)
