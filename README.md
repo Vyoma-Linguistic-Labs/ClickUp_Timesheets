@@ -36,9 +36,3 @@ A script to generate timesheets in the required format, at the click of a button
 ## What is required in the ClickUp tasks for Timesheets
 
 For each task you work on any day, add the hours and minutes in the 'Time Tracked' field for that date (in 'When:' field).
-
-# Employee Statistics
-
-The script 'allEmpStats.py' can be run to obtain ClickUp stats of all employees. It has to be run the terminal using the command `python allEmpStats.py start_date end_date`.
-
-The `start_date` and `end_date` have to be UNIX time format. The UNIX time can be obtained from [link](epochconverter.com).
