@@ -18,7 +18,7 @@ import pytz
 from PIL import Image, ImageTk
 from io import BytesIO
 
-__version__ = "v2.0.0"
+__version__ = "v2.0.1"
 # Dictionary mapping month names to numbers
 month_dict = {
     "Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6, "Jul": 7,
