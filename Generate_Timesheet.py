@@ -6,6 +6,7 @@ Created on Fri May 26 18:52:02 2023
 """
 
 import tkinter as tk
+from tkinter import messagebox
 from tkcalendar import Calendar
 import pandas as pd
 from datetime import datetime, timezone
@@ -37,7 +38,8 @@ ist_timezone = pytz.timezone('Asia/Kolkata')
 
 # Exchange keys and values
 month_flipped = {value: key for key, value in month_dict.items()}
-def download_latest():
+def download_latest(root):
+        
     # Define the GitHub repository, file path, and file URL
     repository = "Vyoma-Linguistic-Labs/ClickUp_Timesheets"
     file_path = "Generate_Timesheet.py"  # Replace with the path to the file you want to download
@@ -56,11 +58,20 @@ def download_latest():
             with open(local_file_name, "wb") as file:
                 file.write(response.content)
             print(f"File '{local_file_name}' downloaded successfully.")
+            message = "The latest version of Generate_Timesheet.py is downloaded."\
+                "\nClose this window and re-run the script."
+            messagebox.showinfo("Success!", message)
+            root.destroy()
+            import sys
+            sys.exit()
         else:
             print(f"Failed to download file. Status code: {response.status_code}")
+            messagebox.showerror("Error!", 
+                                 f"Failed to download file. Status code: {response.status_code}")
 
     except requests.exceptions.RequestException as e:
         print(f"An error occurred: {str(e)}")
+        messagebox.showerror("Error!", f"An error occurred: {str(e)}")
     return
 
 def check_for_update(current_version):
@@ -76,18 +87,19 @@ def check_for_update(current_version):
             message = f"A new version ({latest_version}) is available."\
                 "\nClick on the button below to automatically download the"\
                     " \nlatest version from the GitHub repository."
-            link = "https://github.com/Vyoma-Linguistic-Labs/ClickUp_Timesheets/releases/latest"
-            label = tk.Label(root, text=message, fg="blue", cursor="hand2",
+            # link = "https://github.com/Vyoma-Linguistic-Labs/ClickUp_Timesheets/releases/latest"
+            label = tk.Label(root, text=message, #fg="blue", cursor="hand2",
                              font=("Times", 12, "bold"))
             label.pack()        
-            # Bind the label to the open_link function with the corresponding link_url
-            label.bind("<Button-1>", lambda e, 
-                       url=link: webbrowser.open_new(url))
+            # # Bind the label to the open_link function with the corresponding link_url
+            # label.bind("<Button-1>", lambda e, 
+            #            url=link: webbrowser.open_new(url))
             
             # Submit Button
-            submit_button = tk.Button(root, text=f"Download Latest Version {latest_version}", command=download_latest)
+            submit_button = tk.Button(root, text=f"Download Latest Version {latest_version}",
+                                      command=lambda arg=root: download_latest(arg))
             submit_button.pack(pady=10)
-            
+                        
             root.mainloop()
             import sys
             sys.exit()
