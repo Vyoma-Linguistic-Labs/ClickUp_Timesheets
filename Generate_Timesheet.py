@@ -18,7 +18,9 @@ import pytz
 from PIL import Image, ImageTk
 from io import BytesIO
 
-__version__ = "v2.0.1"
+__version__ = "v2.0.2"
+__date__ = "11th Oct 2023"
+__auth__ = "pk_3326657_EOM3G6Z3CKH2W61H8NOL5T7AGO9D7LNN"
 # Dictionary mapping month names to numbers
 month_dict = {
     "Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6, "Jul": 7,
@@ -38,6 +40,7 @@ ist_timezone = pytz.timezone('Asia/Kolkata')
 
 # Exchange keys and values
 month_flipped = {value: key for key, value in month_dict.items()}
+
 def download_latest(root):
         
     # Define the GitHub repository, file path, and file URL
@@ -87,13 +90,9 @@ def check_for_update(current_version):
             message = f"A new version ({latest_version}) is available."\
                 "\nClick on the button below to automatically download the"\
                     " \nlatest version from the GitHub repository."
-            # link = "https://github.com/Vyoma-Linguistic-Labs/ClickUp_Timesheets/releases/latest"
             label = tk.Label(root, text=message, #fg="blue", cursor="hand2",
                              font=("Times", 12, "bold"))
             label.pack()        
-            # # Bind the label to the open_link function with the corresponding link_url
-            # label.bind("<Button-1>", lambda e, 
-            #            url=link: webbrowser.open_new(url))
             
             # Submit Button
             submit_button = tk.Button(root, text=f"Download Latest Version {latest_version}",
@@ -114,7 +113,7 @@ def convert_milliseconds_to_hours_minutes(milliseconds):
 
 def memberInfo():
     url = "https://api.clickup.com/api/v2/team"
-    headers = {"Authorization": "pk_3326657_EOM3G6Z3CKH2W61H8NOL5T7AGO9D7LNN"}
+    headers = {"Authorization": __auth__}
     response = requests.get(url, headers=headers)
     data = response.json()
     
@@ -169,7 +168,7 @@ def get_selected_dates():
     
     headers = {
       "Content-Type": "application/json",
-      "Authorization": "pk_3326657_EOM3G6Z3CKH2W61H8NOL5T7AGO9D7LNN"
+      "Authorization": __auth__
     }
     
     response = requests.get(url, headers=headers, params=query)
@@ -246,7 +245,7 @@ def get_selected_dates():
     df_h = df_h.drop(['Duration', 'Date', 'Day'], axis=1)
     
     # define the API parameters
-    headers = {"Authorization": "pk_3326657_EOM3G6Z3CKH2W61H8NOL5T7AGO9D7LNN"}
+    headers = {"Authorization": __auth__}
     
     # iterate over the unique task IDs in the dataframe
     for task_id in df_h['Task ID'].unique():
@@ -270,6 +269,11 @@ def get_selected_dates():
                         df_h.loc[df_h['Task ID'] == task_id, custom_field['name']] = custom_field['type_config']['options'][custom_field['value']]['name']
         except:
            pass        
+    
+    # Check if 'Proj-Common-Activity' column exists in the DataFrame
+    if 'Proj-Common-Activity' in df_h.columns:
+        # Filter out rows where 'Proj-Common-Activity' is 'Vyoma Holiday' or 'Personal Leave'
+        df_h = df_h[(df_h['Proj-Common-Activity'] != 'Vyoma Holiday') & (df_h['Proj-Common-Activity'] != 'Personal Leave')]
     
     # Check if 'Goal Type' column exists
     if 'Goal Type' not in df_h.columns:
@@ -328,7 +332,7 @@ def get_selected_dates():
         if rows_missing_goal_type:
             # Add widgets to the error window to display the error message
             goal_error_label = tk.Label(error_window, 
-                                   text="Goal Type not set for:",
+                                   text="Goal Type not set for (links provided):",
                                    font=("Times", 12, "bold"))
             goal_error_label.pack()
                   
@@ -351,8 +355,8 @@ def get_selected_dates():
                                font=("Times", 12, "bold"))
         info_label.pack()
         # Start the mainloop for the error window
-        error_window.mainloop()
-            
+        error_window.mainloop()    
+    
     # Add the 'time_this_week' column by summing the values of all days_of_week columns
     df_h['Total Tracked this week in this task'] = df_h[days_of_week].sum(axis=1)
     # Calculate the totals of the days_of_week columns
@@ -383,7 +387,23 @@ def get_selected_dates():
     df_h.insert(10, 'Total Tracked this week in this task', 
                 df_h.pop('Total Tracked this week in this task'))
     # write the DataFrame to an Excel file
-    df_h.to_excel(filename, index=False) #members_dict[key]+    
+    # Create a new Excel writer using xlsxwriter
+    writer = pd.ExcelWriter(filename, engine='xlsxwriter')
+    df_h.to_excel(writer, sheet_name='Sheet1', index=False)
+    
+    # Get the xlsxwriter workbook and worksheet objects
+    worksheet = writer.sheets['Sheet1']
+    
+    # Add hyperlinks to the 'Task ID' column
+    for row_num, value in enumerate(df_h['Task ID'], start=1):
+        if pd.isna(value):
+            break
+        url = f'https://app.clickup.com/t/{value}'
+        worksheet.write_url(row_num, df_h.columns.get_loc('Task ID'), url, string=value)
+    
+    # Save the Excel file
+    writer.close()
+    # df_h.to_excel(filename, index=False) #members_dict[key]+    
     # Display output filename
     if filename:
         output_label.config(text=f"Note: Please find the generated Excel output in this folder itself.\nFile: {filename}")
@@ -520,7 +540,7 @@ if __name__ == "__main__":
     output_label.pack()
     
     # Create the footer label
-    footer_label = tk.Label(root, text="Version " + __version__ +" (14th Sept 2023)", 
+    footer_label = tk.Label(root, text="Version " + __version__ +" "+__date__, 
                             relief=tk.RAISED, anchor=tk.W)
     footer_label.pack(side=tk.BOTTOM, fill=tk.X)
     
