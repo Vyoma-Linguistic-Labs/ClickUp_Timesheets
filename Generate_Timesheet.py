@@ -18,8 +18,8 @@ import pytz
 from PIL import Image, ImageTk
 from io import BytesIO
 
-__version__ = "v2.0.2"
-__date__ = "11th Oct 2023"
+__version__ = "v2.0.3"
+__date__ = "24th May 2023"
 __auth__ = "pk_3326657_EOM3G6Z3CKH2W61H8NOL5T7AGO9D7LNN"
 # Dictionary mapping month names to numbers
 month_dict = {
@@ -124,9 +124,9 @@ def memberInfo():
             member_id = member['user']['id']
             member_username = member['user']['username']
             members_dict[member_id] = member_username
-          
+
     # Exchange keys and values - keep last 4 digits corresponding to emp ID
-    members_dict = {value[-4:]: key for key, value in members_dict.items()}
+    members_dict = {value[-4:]: key for key, value in members_dict.items() if value is not None}
         
     return members_dict
 
