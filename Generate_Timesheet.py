@@ -18,8 +18,8 @@ import pytz
 from PIL import Image, ImageTk
 from io import BytesIO
 
-__version__ = "v2.0.3"
-__date__ = "24th May 2023"
+__version__ = "v2.0.4"
+__date__ = "2nd July 2024"
 __auth__ = "pk_3326657_EOM3G6Z3CKH2W61H8NOL5T7AGO9D7LNN"
 # Dictionary mapping month names to numbers
 month_dict = {
@@ -32,7 +32,8 @@ columns_to_check = [
     "Course", "Product", "Proj-Common-Activity", "Proj-Outside-Office",
     "Management-Project", "Technology-Project", "Linguistic-Project",
     "MMedia-Project", "Project-CST", "Sales-Mktg-Project", "Project-ELA",
-    "Proj-KidsPersona", "FinAcc-Project", "Website", "SFH-Admin-Project", "Admin-Project"
+    "Proj-KidsPersona", "FinAcc-Project", "Website", "SFH-Admin-Project", 
+    "Admin-Project", "Linguistic-Activity"
 ]
 
 # Create a timezone object for IST
@@ -103,7 +104,6 @@ def check_for_update(current_version):
             import sys
             sys.exit()
 
-
 def convert_milliseconds_to_hours_minutes(milliseconds):
     seconds = milliseconds / 1000
     minutes = seconds // 60
@@ -132,8 +132,7 @@ def memberInfo():
 
 def open_link(link):    
     webbrowser.open_new("app.clickup.com/t/"+link)
-    
-    
+        
 def get_selected_dates():
     start_date = start_cal.selection_get()
     end_date = end_cal.selection_get()
@@ -289,16 +288,16 @@ def get_selected_dates():
     for index, row in df_h.iterrows():
         # Extract the 'Task Name' column value for the current row
         task_name = row['Task Name']
-        task_id = row['Task ID']
-        # Check if all specified columns are NaN for the current row
-        if row[project_columns].isna().all():
-            # All specified columns are NaN, so add the 'Task Name' to the list
+        task_id = row['Task ID']        
+            
+        if all(row[col] == 'nan' for col in project_columns):  # All specified columns are "nan" (string literal)
             rows_with_missing_data.append(task_name)
             row_id_with_missing_data.append(task_id)
-            
-        if pd.isna(row['Goal Type']):
+        
+        if row['Goal Type'] == 'nan':  # Goal Type is "nan" (string literal)
             rows_missing_goal_type.append(task_name)
             row_id_missing_goal_type.append(task_id)
+
             
     # Output the names of rows that do not fit the criterion
     if rows_with_missing_data or rows_missing_goal_type:
