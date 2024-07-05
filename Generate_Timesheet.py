@@ -18,8 +18,8 @@ import pytz
 from PIL import Image, ImageTk
 from io import BytesIO
 
-__version__ = "v2.0.4"
-__date__ = "2nd July 2024"
+__version__ = "v2.1.0"
+__date__ = "5th July 2024"
 __auth__ = "pk_3326657_EOM3G6Z3CKH2W61H8NOL5T7AGO9D7LNN"
 # Dictionary mapping month names to numbers
 month_dict = {
@@ -365,7 +365,43 @@ def get_selected_dates():
     df_h = pd.concat([df_h, totals.to_frame().T], ignore_index=True)
     # Sum the values in the last row of the DataFrame
     weekly_total = df_h.iloc[-1].sum()
-    # Update the value in the 'Status' column for the last row
+    
+    if  pd.isna(df_h.at[df_h.index[0], 'Task Status']):
+        # Create a new top-level window for the error message
+        error_window = tk.Toplevel(root)
+        error_window.title("ERROR")
+    
+        # Set the size of the error window
+        window_width, window_height = 400, 200
+        error_window.geometry(f"{window_width}x{window_height}")
+    
+        # Calculate the position to center the error window with respect to the root window
+        root_x = root.winfo_rootx()
+        root_y = root.winfo_rooty()
+        root_width = root.winfo_width()
+        root_height = root.winfo_height()
+    
+        position_right = root_x + int(root_width / 2) - int(window_width / 2)
+        position_down = root_y + int(root_height / 2) - int(window_height / 2)
+    
+        error_window.geometry(f"+{position_right}+{position_down}")
+    
+        # Add padding around the message
+        padding = {"padx": 20, "pady": 20}
+    
+        # Add widgets to the error window to display the error message
+        error_label = tk.Label(
+            error_window,
+            text="There are no entries in this Date Range."
+                 "\n\nPlease change Date Range or Update Entries in ClickUp",
+            font=("Arial", 16, "bold"),
+            wraplength=360,  # Wrap text within 360 pixels
+            **padding
+        )
+        error_label.pack(expand=True)
+    
+        error_window.mainloop()  
+    # Update the value in the 'Status' column for the last row 
     df_h.at[df_h.index[-1], 'Task Status'] = 'Daily Totals ->'
     
     # Create an empty row with NaN values
@@ -374,7 +410,8 @@ def get_selected_dates():
     df_h = pd.concat([df_h, empty_row.to_frame().T], ignore_index=True)    
     # Append a value to the 6th column
     df_h.iloc[-1, 5] = weekly_total
-    if int((end_timestamp - start_timestamp)/86400)+1 <= 7:            
+    if int((end_timestamp - start_timestamp)/86400)+1 <= 7: 
+        df_h.iloc[:, 3] = df_h.iloc[:, 3].astype(object)  # Convert the entire column to object type           
         df_h.iloc[-1, 3] = 'Week\'s total ='
         week_number = end_date.isocalendar()[1]
         df_h.at[df_h.index[-1], 'Task Name'] = f'Week #{week_number} - {start_date_str}, {year_str} - {end_date_str}, {year_str}'
